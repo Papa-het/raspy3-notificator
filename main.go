@@ -20,28 +20,27 @@ var (
 	sounds = map[string]string{
 		"upsell": "upsell.wav",
 	}
-	authToken = "your-secret-token" // Change this to your desired token
+	authToken = "your-secret-token"
 )
 
 func PlaySound(filePath string) {
 	var cmd *exec.Cmd
 
-	if runtime.GOOS == "darwin" { // macOS
+	if runtime.GOOS == "darwin" {
 		cmd = exec.Command("afplay", filePath)
-	} else { // Linux (Raspberry Pi)
+	} else {
 		cmd = exec.Command("aplay", filePath)
 	}
 	err := cmd.Start()
 	if err != nil {
-		log.Println("Ошибка воспроизведения:", err)
+		log.Println("Error playing sound:", err)
 		return
 	}
 
-	log.Println("🔊 Звук запущен в фоновом режиме:", filePath)
+	log.Println("🔊 Sound started in background:", filePath)
 } 
 
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
-	// Check for token in Authorization header
 	token := r.Header.Get("Authorization")
 	if token != "Bearer "+authToken {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -75,20 +74,17 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Warning: .env file not found")
 	}
 
-	// Get token from environment variable
 	if envToken := os.Getenv("WEBHOOK_TOKEN"); envToken != "" {
 		authToken = envToken
 	} else {
 		log.Fatal("WEBHOOK_TOKEN environment variable is required")
 	}
 
-	// Get port from environment variable or use default
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
