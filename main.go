@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sync"
 
 	"github.com/joho/godotenv"
 )
@@ -24,24 +25,47 @@ var (
 		"solidgate": "solidgate.wav",
 		"stripe":    "stripe.wav",
 	}
-	authToken = "your-secret-token"
+	authToken  = "your-secret-token"
+	currentCmd *exec.Cmd
+	cmdMutex   sync.Mutex
 )
 
 func PlaySound(filePath string) {
-	var cmd *exec.Cmd
+	cmdMutex.Lock()
+	defer cmdMutex.Unlock()
 
+	if currentCmd != nil && currentCmd.Process != nil {
+		err := currentCmd.Process.Kill()
+		if err != nil {
+			log.Println("Error stopping previous sound:", err)
+		}
+	}
+
+	var cmd *exec.Cmd
 	if runtime.GOOS == "darwin" {
 		cmd = exec.Command("afplay", filePath)
 	} else {
 		cmd = exec.Command("aplay", filePath)
 	}
+
 	err := cmd.Start()
 	if err != nil {
 		log.Println("Error playing sound:", err)
 		return
 	}
 
+	currentCmd = cmd
+
 	log.Println("🔊 Sound started in background:", filePath)
+
+	go func() {
+		cmd.Wait()
+		cmdMutex.Lock()
+		if currentCmd == cmd {
+			currentCmd = nil
+		}
+		cmdMutex.Unlock()
+	}()
 }
 
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
