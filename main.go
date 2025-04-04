@@ -45,7 +45,7 @@ func PlaySound(filePath string) {
 	if runtime.GOOS == "darwin" {
 		cmd = exec.Command("afplay", filePath)
 	} else {
-		cmd = exec.Command("aplay", filePath)
+		cmd = exec.Command("mpg123", filePath)
 	}
 
 	err := cmd.Start()
