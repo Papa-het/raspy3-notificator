@@ -20,10 +20,10 @@ type WebhookRequest struct {
 
 var (
 	sounds = map[string]string{
-		"airwallex": "airwallex.wav",
-		"checkout":  "checkout.wav",
-		"solidgate": "solidgate.wav",
-		"stripe":    "stripe.wav",
+		"airwallex": "airwallex.mp3",
+		"checkout":  "checkout.mp3",
+		"solidgate": "solidgate.mp3",
+		"stripe":    "stripe.mp3",
 	}
 	authToken  = "your-secret-token"
 	currentCmd *exec.Cmd
