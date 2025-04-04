@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"os"
+
 	"github.com/joho/godotenv"
 )
 
@@ -18,7 +19,10 @@ type WebhookRequest struct {
 
 var (
 	sounds = map[string]string{
-		"upsell": "upsell.wav",
+		"airwallex": "airwallex.wav",
+		"checkout":  "checkout.wav",
+		"solidgate": "solidgate.wav",
+		"stripe":    "stripe.wav",
 	}
 	authToken = "your-secret-token"
 )
@@ -38,7 +42,7 @@ func PlaySound(filePath string) {
 	}
 
 	log.Println("🔊 Sound started in background:", filePath)
-} 
+}
 
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("Authorization")
@@ -65,7 +69,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	soundPath, _ := filepath.Abs(filepath.Join("sounds", soundFile))
+	soundPath, _ := filepath.Abs(filepath.Join("/home/yerkinmm/Desktop/raspy3-notificator/sounds", soundFile))
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Sound is playing in the background"))
