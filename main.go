@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -68,6 +69,19 @@ func PlaySound(filePath string) {
 	}()
 }
 
+func isWorkingHours() bool {
+	loc, err := time.LoadLocation("Asia/Almaty") // GMT+5
+	if err != nil {
+		log.Println("Error loading timezone:", err)
+		return false
+	}
+
+	now := time.Now().In(loc)
+	hour := now.Hour()
+
+	return hour >= 9 && hour < 20
+}
+
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("Authorization")
 	if token != "Bearer "+authToken {
@@ -90,6 +104,12 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	soundFile, exists := sounds[req.Plan]
 	if !exists {
 		http.Error(w, "Invalid plan", http.StatusBadRequest)
+		return
+	}
+
+	if !isWorkingHours() {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Request received but ignored - outside working hours"))
 		return
 	}
 
